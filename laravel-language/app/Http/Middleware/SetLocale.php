@@ -10,15 +10,18 @@ class SetLocale
 {
     public function handle($request, Closure $next)
     {
-        if ($request->route('lang')) {
-            $locale = $request->route('lang');
-            if (in_array($locale, ['en', 'si'])) {
-                Session::put('locale', $locale);
-            }
+        // Get language from route parameter
+        $lang = $request->route('lang');
+        
+        // Validate and set locale
+        if ($lang && in_array($lang, ['en', 'si'])) {
+            Session::put('locale', $lang);
+            App::setLocale($lang);
+        } else {
+            // Fallback to session or config
+            $fallbackLang = Session::get('locale', config('app.locale'));
+            App::setLocale($fallbackLang);
         }
-
-        $locale = Session::get('locale', config('app.locale'));
-        App::setLocale($locale);
 
         return $next($request);
     }
